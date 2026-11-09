@@ -1,0 +1,37 @@
+# Multi-window, multi-burn-rate SLO burn alerts. Target SLO: 99.9% success.
+# Error budget: 0.1%. Window burn rates come from the SRE workbook: 14.4x over
+# 1h is fast, 6x over 6h is slow. See Google's SRE Book for the arithmetic.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: obsidian-slo-burn
+  labels:
+    release: obsidian
+spec:
+  groups:
+    - name: slo-burn
+      rules:
+        - alert: ErrorBudgetBurnFast
+          expr: |
+            (
+              sum(rate(http_requests_total{status=~"5.."}[1h]))
+                /
+              sum(rate(http_requests_total[1h]))
+            ) > 14.4 * 0.001
+          for: 2m
+          labels: { severity: critical }
+          annotations:
+            summary: "Fast burn: >14.4x error budget in the last hour"
+            runbook: "https://example.com/runbooks/slo-fast-burn"
+
+        - alert: ErrorBudgetBurnSlow
+          expr: |
+            (
+              sum(rate(http_requests_total{status=~"5.."}[6h]))
+                /
+              sum(rate(http_requests_total[6h]))
+            ) > 6 * 0.001
+          for: 15m
+          labels: { severity: warning }
+          annotations:
+            summary: "Slow burn: >6x error budget over 6 hours"
