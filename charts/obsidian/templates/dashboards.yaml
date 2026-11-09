@@ -1,0 +1,19 @@
+{{- /*
+Ship bundled Grafana dashboards as ConfigMaps labelled so the sidecar
+picks them up automatically. Add a new JSON file under `dashboards/`
+and include it here.
+*/ -}}
+{{- $root := . -}}
+{{- range $path, $_ := .Files.Glob "dashboards/*.json" }}
+{{- $name := base $path | trimSuffix ".json" | lower }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: obsidian-dash-{{ $name }}
+  labels:
+    grafana_dashboard: "1"
+data:
+  {{ base $path }}: |-
+{{ $root.Files.Get $path | indent 4 }}
+{{- end }}
