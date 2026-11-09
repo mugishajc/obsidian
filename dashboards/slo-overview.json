@@ -1,0 +1,49 @@
+{
+  "title": "SLO Overview",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "tags": ["obsidian", "slo"],
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "30d availability (success / total)",
+      "targets": [{
+        "expr": "sum(rate(http_requests_total{status=~\"2..\"}[30d])) / sum(rate(http_requests_total[30d]))"
+      }],
+      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1 } },
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 5 }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "28d error budget burn (fraction used)",
+      "targets": [{
+        "expr": "(1 - sum(rate(http_requests_total{status=~\"2..\"}[28d])) / sum(rate(http_requests_total[28d]))) / 0.001"
+      }],
+      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1 } },
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 5 }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "p95 latency per route",
+      "targets": [{
+        "expr": "histogram_quantile(0.95, sum by (le, route) (rate(http_request_duration_seconds_bucket[5m])))",
+        "legendFormat": "{{route}}"
+      }],
+      "gridPos": { "x": 0, "y": 5, "w": 12, "h": 8 }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "RED: rate, errors, duration",
+      "targets": [
+        { "expr": "sum by (service) (rate(http_requests_total[1m]))", "legendFormat": "rate {{service}}" },
+        { "expr": "sum by (service) (rate(http_requests_total{status=~\"5..\"}[1m]))", "legendFormat": "5xx {{service}}" }
+      ],
+      "gridPos": { "x": 12, "y": 5, "w": 12, "h": 8 }
+    }
+  ]
+}

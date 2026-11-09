@@ -1,0 +1,30 @@
+{
+  "title": "Logs triage",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "tags": ["obsidian", "logs"],
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Log volume by level",
+      "targets": [{
+        "datasource": { "type": "loki" },
+        "expr": "sum by (level) (count_over_time({app!=\"\"} | json [1m]))"
+      }],
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 8 }
+    },
+    {
+      "id": 2,
+      "type": "logs",
+      "title": "Recent errors",
+      "targets": [{
+        "datasource": { "type": "loki" },
+        "expr": "{app!=\"\"} | json | level=\"error\""
+      }],
+      "options": { "showLabels": true, "showTime": true, "wrapLogMessage": true },
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 14 }
+    }
+  ]
+}
