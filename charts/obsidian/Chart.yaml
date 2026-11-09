@@ -1,0 +1,24 @@
+apiVersion: v2
+name: obsidian
+description: Opinionated observability stack for small Kubernetes clusters
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+
+dependencies:
+  - name: kube-prometheus-stack
+    version: "62.7.0"
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: metrics.enabled
+  - name: loki
+    version: "6.16.0"
+    repository: https://grafana.github.io/helm-charts
+    condition: logs.enabled
+  - name: tempo
+    version: "1.14.0"
+    repository: https://grafana.github.io/helm-charts
+    condition: traces.enabled
+  - name: opentelemetry-collector
+    version: "0.108.0"
+    repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+    condition: otel.enabled
