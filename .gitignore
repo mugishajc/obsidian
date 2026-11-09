@@ -1,2 +1,4 @@
 charts/obsidian/charts/
 charts/obsidian/Chart.lock
+config.bat
+node_modules

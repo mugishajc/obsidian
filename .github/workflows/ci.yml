@@ -1,0 +1,36 @@
+name: ci
+on:
+  push: { branches: [main] }
+  pull_request:
+
+jobs:
+  helm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+        with: { version: "3.15.4" }
+      - name: add repos and update deps
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana               https://grafana.github.io/helm-charts
+          helm repo add open-telemetry        https://open-telemetry.github.io/opentelemetry-helm-charts
+          helm dependency update charts/obsidian
+      - name: lint
+        run: helm lint charts/obsidian
+      - name: template renders
+        run: helm template obsidian charts/obsidian --namespace observability | head -200
+
+  dashboards-and-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: dashboards are valid JSON
+        run: |
+          for f in dashboards/*.json; do python3 -c "import json,sys; json.load(open('$f'))"; done
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: alert rules are valid YAML
+        run: |
+          pip install pyyaml
+          for f in alerts/*.yaml; do python3 -c "import yaml,sys; yaml.safe_load_all(open('$f'))"; done
